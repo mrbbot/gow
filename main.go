@@ -11,11 +11,10 @@ import (
 )
 
 var (
-	cmd  *exec.Cmd
-	file string
+	cmd *exec.Cmd
 )
 
-func run() error {
+func run(args []string) error {
 	if cmd != nil {
 		pgid, err := syscall.Getpgid(cmd.Process.Pid)
 		if err == nil {
@@ -23,7 +22,7 @@ func run() error {
 		}
 		_ = cmd.Wait()
 	}
-	cmd = exec.Command("go", "run", file)
+	cmd = exec.Command("go", args...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -37,9 +36,10 @@ func main() {
 		fmt.Printf("[GOW] not enough args: usage: gow <file>\n")
 		os.Exit(1)
 	}
-	file = args[0]
 
-	err := run()
+	runArgs := append([]string{"run"}, args...)
+
+	err := run(runArgs)
 	if err != nil {
 		fmt.Printf("[GOW] err starting: %v\n", err)
 	}
@@ -53,7 +53,7 @@ func main() {
 			case event := <-w.Event:
 				if filepath.Ext(event.Path) == ".go" {
 					fmt.Printf("[GOW] %s changed, restarting...\n", filepath.Base(event.Path))
-					err := run()
+					err := run(runArgs)
 					if err != nil {
 						fmt.Printf("[GOW] err restarting: %v\n", err)
 					}
