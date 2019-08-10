@@ -32,8 +32,8 @@ func run(args []string) error {
 
 func main() {
 	args := os.Args[1:]
-	if len(args) != 1 {
-		fmt.Printf("[GOW] wrong number of args: usage: gow <file>\n")
+	if len(args) < 1 {
+		fmt.Printf("[GOW] wrong number of args: usage: gow <file> <args>\n")
 		os.Exit(1)
 	}
 
